@@ -1,9 +1,9 @@
 package com.sbt.test;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import com.sbt.test.fileprocess.FileProcessor;
 
 import com.sbt.test.exceptions.NotFoundSettingException;
+import com.sbt.test.fileprocess.SaveDBProcessor;
 import com.sbt.test.settings.EventType;
 import com.sbt.test.settings.Settings;
 import com.sbt.test.settings.SettingsRepository;
@@ -20,9 +20,11 @@ public class WatchDir {
     public static final String XML = "application/xml";
     private final WatchService watcher;
     private final Map<WatchKey,Path> keys;
-    private Path dirDest;
 
     private SettingsRepository settingsRepository;
+    private FileProcessor fileProcessor;
+
+    private Path dirDest;
 
 
     @SuppressWarnings("unchecked")
@@ -48,10 +50,11 @@ public class WatchDir {
         keys.put(key, dir);
     }
 
-    WatchDir(SettingsRepository settingsRepository) throws IOException {
+    WatchDir(SettingsRepository settingsRepository, FileProcessor copyingService) throws IOException {
         this.watcher = FileSystems.getDefault().newWatchService();
         this.keys = new HashMap<>();
         this.settingsRepository = settingsRepository;
+        this.fileProcessor = copyingService;
     }
 
     private void initSettings() throws IOException {
@@ -89,7 +92,8 @@ public class WatchDir {
 
     void processEvents() throws IOException {
         initSettings();
-        for (;;) {
+        fileProcessor.submitToSaveDB(dirDest);
+        while (true) {
 
             // wait for key to be signalled
             WatchKey key;
@@ -118,7 +122,7 @@ public class WatchDir {
                 Path child = dir.resolve(name);
                 try {
                     if (Files.probeContentType(child).equals(XML)) {
-                        FileUtils.copyFileToDirectory(child.toFile(), dirDest.toFile());
+                        fileProcessor.submitToCopy(child, dirDest);
                     }
                 } catch (IOException e) {
                     System.err.println(e);

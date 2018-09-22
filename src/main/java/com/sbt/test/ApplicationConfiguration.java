@@ -1,21 +1,18 @@
 package com.sbt.test;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.ClassPathResource;
+import com.sbt.test.fileprocess.FileProcessor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.*;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
-import org.springframework.jdbc.datasource.init.DataSourceInitializer;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import javax.sql.DataSource;
-import java.io.IOException;
 
 @Configuration
 @ComponentScan
+@PropertySource("copyinservice.properties")
 public class ApplicationConfiguration {
 
     @Bean(destroyMethod = "shutdown")
@@ -26,5 +23,15 @@ public class ApplicationConfiguration {
     @Bean
     JdbcTemplate jdbcTemplate(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
+    }
+
+    @Bean
+    static PropertySourcesPlaceholderConfigurer pspc() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    @Bean(destroyMethod = "close")
+    FileProcessor copyingService(@Value("${scanner.poolsize}") int poolsize) {
+        return new FileProcessor(poolsize);
     }
 }
