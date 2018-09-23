@@ -24,8 +24,6 @@ public class WatchDir {
     private SettingsRepository settingsRepository;
     private FileProcessor fileProcessor;
 
-    private Path dirDest;
-
 
     @SuppressWarnings("unchecked")
     static <T> WatchEvent<T> cast(WatchEvent<?> event) {
@@ -58,13 +56,7 @@ public class WatchDir {
     }
 
     private void initSettings() throws IOException {
-        Settings setting = settingsRepository.findBySettingName(SettingsRepository.SETTING_NAME_DIR_DEST).
-                orElseThrow(() -> new NotFoundSettingException(SettingsRepository.SETTING_NAME_DIR_DEST));
-        this.dirDest = Paths.get(setting.getSettingValue());
-        if (!Files.exists(dirDest)) {
-            Files.createDirectories(dirDest);
-        }
-        setting = settingsRepository.findBySettingName(SettingsRepository.SETTING_NAME_TRACE).
+        Settings setting = settingsRepository.findBySettingName(SettingsRepository.SETTING_NAME_TRACE).
                 orElse(new Settings(SettingsRepository.SETTING_NAME_TRACE, Boolean.FALSE.toString()));
         boolean trace = Boolean.valueOf(setting.getSettingValue());
         setting = settingsRepository.findBySettingName(SettingsRepository.SETTING_NAME_DIR).
@@ -90,11 +82,9 @@ public class WatchDir {
         register(dir, trace, kinds);
     }
 
-    void processEvents() throws IOException {
+    void processEvents(Path dirDest) throws IOException {
         initSettings();
-        fileProcessor.submitToSaveDB(dirDest);
         while (true) {
-
             // wait for key to be signalled
             WatchKey key;
             try {

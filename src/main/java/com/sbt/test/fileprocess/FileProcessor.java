@@ -17,10 +17,10 @@ public class FileProcessor {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private LogFileRepository logFileRepository;
+    private LogDirDestRepository logDirDestRepository;
 
     @Autowired
-    private LogDirDestRepository logDirDestRepository;
+    private ComplextProcess complextProcess;
 
     private final static int TERMINATION_WAITING_INTERVAL = 3;
 
@@ -38,7 +38,7 @@ public class FileProcessor {
     }
 
     public void submitToSaveDB(final Path dirDest) throws IOException {
-        executorSaveToDB.execute(new SaveDBProcessor(dirDest, logFileRepository, logDirDestRepository));
+        executorSaveToDB.execute(new SaveDBProcessor(dirDest, complextProcess, logDirDestRepository));
     }
 
     private void close() {
