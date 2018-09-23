@@ -1,5 +1,4 @@
 spring:
-  profiles: test, prod
   jpa:
     show_sql: false
     database: H2
@@ -8,3 +7,5 @@ spring:
   activemq:
     packages:
       trust-all: true
+  profiles:
+    active: dev

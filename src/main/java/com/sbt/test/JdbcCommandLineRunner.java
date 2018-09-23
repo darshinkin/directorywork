@@ -18,7 +18,7 @@ import java.nio.file.Paths;
 
 
 @Component
-@Profile("prod")
+@Profile("dev")
 class JdbcCommandLineRunner implements CommandLineRunner {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
