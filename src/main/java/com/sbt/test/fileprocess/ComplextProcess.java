@@ -11,9 +11,8 @@ import com.sbt.test.loggingDB.LogDirDest;
 import com.sbt.test.loggingDB.LogDirDestRepository;
 import com.sbt.test.loggingDB.LogFile;
 import com.sbt.test.loggingDB.LogFileRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.io.FileUtils;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -39,7 +38,7 @@ public class ComplextProcess {
         this.logDirDestRepository = logDirDestRepository;
     }
 
-    public void complexProcessingFile(Path child, LogDirDest logDirDest) {
+    public void complexProcessingFile(Path child, LogDirDest logDirDest, Path dirDestArchive) {
         String content;
         try {
             byte[] data = Files.readAllBytes(child);
@@ -53,7 +52,16 @@ public class ComplextProcess {
         }
 
         LogFile logFile = new LogFile(child.getFileName().toString(), content, new Date());
-        logFileRepository.save(logFile);
+        entityManager.persist(logFile);
         jmsTemplate.convertAndSend("loggings", logFile);
+
+        try {
+            FileUtils.moveFileToDirectory(child.toFile(), dirDestArchive.toFile(), true);
+        } catch (IOException e) {
+            System.err.println(e);
+            String errorMsg = String.format("Occured error %s", e.getMessage());
+            logDirDest.setEvent(errorMsg);
+            throw new RuntimeException(e);
+        }
     }
 }

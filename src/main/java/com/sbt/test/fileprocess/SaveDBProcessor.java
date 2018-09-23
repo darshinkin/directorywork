@@ -18,19 +18,21 @@ public class SaveDBProcessor implements Runnable {
     private final Map<WatchKey,Path> keys;
     private ComplextProcess complextProcess;
     private LogDirDestRepository logDirDestRepository;
+    private Path dirDestArchive;
 
     @SuppressWarnings("unchecked")
     static <T> WatchEvent<T> cast(WatchEvent<?> event) {
         return (WatchEvent<T>)event;
     }
 
-    public SaveDBProcessor(Path dirDest, ComplextProcess complextProcess,
+    public SaveDBProcessor(Path dirDestTemp, Path dirDestArchive, ComplextProcess complextProcess,
                            LogDirDestRepository logDirDestRepository) throws IOException {
         this.keys = new HashMap<>();
         this.watcher = FileSystems.getDefault().newWatchService();
-        register(dirDest);
+        register(dirDestTemp);
         this.complextProcess = complextProcess;
         this.logDirDestRepository = logDirDestRepository;
+        this.dirDestArchive = dirDestArchive;
     }
 
     private void register(Path dir) throws IOException {
@@ -67,7 +69,7 @@ public class SaveDBProcessor implements Runnable {
                 Path name = ev.context();
                 Path child = dir.resolve(name);
 
-                complextProcess.complexProcessingFile(child, logDirDest);
+                complextProcess.complexProcessingFile(child, logDirDest, dirDestArchive);
 
                 logDirDest.setEvent(String.format("Added new file %s", child.toString()));
                 logDirDestRepository.save(logDirDest);

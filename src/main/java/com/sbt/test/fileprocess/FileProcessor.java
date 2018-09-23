@@ -37,8 +37,8 @@ public class FileProcessor {
         executorCopyToDir.execute(new CopyingProcessor(child, dirDest));
     }
 
-    public void submitToSaveDB(final Path dirDest) throws IOException {
-        executorSaveToDB.execute(new SaveDBProcessor(dirDest, complextProcess, logDirDestRepository));
+    public void submitToSaveDB(final Path dirDest, Path dirDestArchive) throws IOException {
+        executorSaveToDB.execute(new SaveDBProcessor(dirDest, dirDestArchive, complextProcess, logDirDestRepository));
     }
 
     private void close() {

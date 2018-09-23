@@ -37,8 +37,16 @@ class JdbcCommandLineRunner implements CommandLineRunner {
     @Override
     public void run(String... strings) throws Exception {
         Path dirDest = retrievDestDir();
-        fileProcessor.submitToSaveDB(dirDest);
-        watchDir.processEvents(dirDest);
+        Path dirDestTemp = Paths.get(dirDest.toString(), "temp");
+        if (!Files.exists(dirDestTemp)) {
+            Files.createDirectories(dirDestTemp);
+        }
+        Path dirDestArchive = Paths.get(dirDest.toString(), "archive");
+        if (!Files.exists(dirDestArchive)) {
+            Files.createDirectories(dirDestArchive);
+        }
+        fileProcessor.submitToSaveDB(dirDestTemp, dirDestArchive);
+        watchDir.processEvents(dirDestTemp);
     }
 
     private Path retrievDestDir() throws IOException {
